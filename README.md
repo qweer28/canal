@@ -1,5 +1,7 @@
 # Canal
 
+English | [简体中文🇨🇳](https://github.com/alibaba/canal/blob/master/README.md)
+
 **Canal** is a high performance data synchronization system based on MySQL binary log. Canal is widely used in Alibaba group (including https://www.taobao.com) to provide reliable low latency incremental data pipeline.
 
 **Canal Server** is capable of parsing MySQL binlog and subscribe to the data change, while **Canal Client** can be implemented to broadcast the change to anywhere, e.g. database and [Apache Kafka](https://kafka.apache.org/).
