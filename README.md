@@ -24,5 +24,9 @@ English | [简体中文🇨🇳](https://github.com/alibaba/canal/blob/master/RE
 
 [Canal Client QuickStart](https://github.com/alibaba/canal/wiki/ClientExample)
 
+## Deployment
+
+## Documentation
+
 ## Contributing [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 We strongly hope more and more people can enjoy Canal and make it better. We welcome all contributions. 
