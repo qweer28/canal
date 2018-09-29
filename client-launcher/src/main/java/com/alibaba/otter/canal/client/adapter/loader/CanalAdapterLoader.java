@@ -1,12 +1,5 @@
 package com.alibaba.otter.canal.client.adapter.loader;
 
-import com.alibaba.otter.canal.client.adapter.CanalOuterAdapter;
-import com.alibaba.otter.canal.client.adapter.support.CanalClientConfig;
-import com.alibaba.otter.canal.client.adapter.support.CanalOuterAdapterConfiguration;
-import com.alibaba.otter.canal.client.adapter.support.ExtensionLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
@@ -15,6 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.alibaba.otter.canal.client.adapter.CanalOuterAdapter;
+import com.alibaba.otter.canal.client.adapter.support.CanalClientConfig;
+import com.alibaba.otter.canal.client.adapter.support.CanalOuterAdapterConfiguration;
+import com.alibaba.otter.canal.client.adapter.support.ExtensionLoader;
 
 /**
  * 外部适配器的加载器
@@ -57,6 +58,8 @@ public class CanalAdapterLoader {
             sa = new InetSocketAddress(ipPort[0], Integer.parseInt(ipPort[1]));
         }
         String zkHosts = this.canalClientConfig.getZookeeperHosts();
+
+        boolean flatMessage = this.canalClientConfig.getFlatMessage();
 
         // if (zkHosts == null && sa == null) {
         // throw new RuntimeException("Blank config property: canalServerHost or
@@ -103,11 +106,12 @@ public class CanalAdapterLoader {
                     canalOuterAdapterGroups.add(canalOuterAdapters);
 
                     // String zkServers = canalClientConfig.getZookeeperHosts();
-                    CanalAdapterKafkaWorker canalKafkaWorker = new CanalAdapterKafkaWorker(zkHosts,
+                    CanalAdapterKafkaWorker canalKafkaWorker = new CanalAdapterKafkaWorker(
                         canalClientConfig.getBootstrapServers(),
                         kafkaTopic.getTopic(),
                         group.getGroupId(),
-                        canalOuterAdapterGroups);
+                        canalOuterAdapterGroups,
+                        flatMessage);
                     canalKafkaWorkers.put(kafkaTopic.getTopic() + "-" + group.getGroupId(), canalKafkaWorker);
                     canalKafkaWorker.start();
                     logger.info("Start adapter for canal-client kafka topic: {} succeed",

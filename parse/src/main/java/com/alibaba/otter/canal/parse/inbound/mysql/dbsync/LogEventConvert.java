@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.otter.canal.common.AbstractCanalLifeCycle;
 import com.alibaba.otter.canal.filter.aviater.AviaterRegexFilter;
-import com.alibaba.otter.canal.parse.driver.mysql.packets.GTIDSet;
 import com.alibaba.otter.canal.parse.exception.CanalParseException;
 import com.alibaba.otter.canal.parse.exception.TableIdNotFoundException;
 import com.alibaba.otter.canal.parse.inbound.BinlogParser;
@@ -99,13 +98,6 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
     private boolean                     filterRows          = false;
     private boolean                     useDruidDdlFilter   = true;
 
-    // latest gtid
-    private GTIDSet                     gtidSet;
-
-    public LogEventConvert(GTIDSet gtidSet){
-        this.gtidSet = gtidSet;
-    }
-
     public LogEventConvert(){
 
     }
@@ -172,10 +164,9 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
 
     private Entry parseGTIDLogEvent(GtidLogEvent logEvent) {
         LogHeader logHeader = logEvent.getHeader();
-        String value = logEvent.getSid().toString() + ":" + logEvent.getGno();
         Pair.Builder builder = Pair.newBuilder();
         builder.setKey("gtid");
-        builder.setValue(value);
+        builder.setValue(logEvent.getGtidStr());
 
         if (logEvent.getLastCommitted() != null) {
             builder.setKey("lastCommitted");
@@ -554,7 +545,6 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
                 rowsCount++;
                 rowChangeBuider.addRowDatas(rowDataBuilder.build());
             }
-
             TableMapLogEvent table = event.getTable();
             Header header = createHeader(event.getHeader(),
                 table.getDbName(),
@@ -843,8 +833,24 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
         }
         headerBuilder.setEventLength(logHeader.getEventLen());
         // enable gtid position
-        if (StringUtils.isNotEmpty(logHeader.getGtidStr())) {
-            headerBuilder.setGtid(logHeader.getGtidStr());
+        if (StringUtils.isNotEmpty(logHeader.getGtidSetStr())) {
+            headerBuilder.setGtid(logHeader.getGtidSetStr());
+        }
+        // add current gtid
+        if (StringUtils.isNotEmpty(logHeader.getCurrentGtid())) {
+            Pair pair = createSpecialPair("curtGtid", logHeader.getCurrentGtid());
+            headerBuilder.addProps(pair);
+        }
+        // add current gtid sequence no
+        if (StringUtils.isNotEmpty(logHeader.getCurrentGtidSn())) {
+            Pair pair = createSpecialPair("curtGtidSn", logHeader.getCurrentGtidSn());
+            headerBuilder.addProps(pair);
+        }
+
+        // add current gtid last committed
+        if (StringUtils.isNotEmpty(logHeader.getCurrentGtidLastCommit())) {
+            Pair pair = createSpecialPair("curtGtidLct", logHeader.getCurrentGtidLastCommit());
+            headerBuilder.addProps(pair);
         }
 
         // add rowsCount suppport
@@ -973,9 +979,5 @@ public class LogEventConvert extends AbstractCanalLifeCycle implements BinlogPar
 
     public void setFilterRows(boolean filterRows) {
         this.filterRows = filterRows;
-    }
-
-    public void setGtidSet(GTIDSet gtidSet) {
-        this.gtidSet = gtidSet;
     }
 }

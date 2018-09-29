@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alibaba.otter.canal.parse.driver.mysql.packets.GTIDSet;
-import com.alibaba.otter.canal.parse.driver.mysql.packets.MysqlGTIDSet;
 import com.taobao.tddl.dbsync.binlog.event.FormatDescriptionLogEvent;
 import com.taobao.tddl.dbsync.binlog.event.GtidLogEvent;
 import com.taobao.tddl.dbsync.binlog.event.TableMapLogEvent;
@@ -24,6 +23,8 @@ public final class LogContext {
     private LogPosition                       logPosition;
 
     private GTIDSet                           gtidSet;
+
+    private GtidLogEvent                      gtidLogEvent; // save current gtid log event
 
     public LogContext(){
         this.formatDescription = FormatDescriptionLogEvent.FORMAT_DESCRIPTION_EVENT_5_x;
@@ -66,18 +67,19 @@ public final class LogContext {
         mapOfTable.clear();
     }
 
-    public final void putGtid(GtidLogEvent logEvent) {
-        if (logEvent != null) {
-            String gtid = logEvent.getSid().toString() + ":" + logEvent.getGno();
-            if (gtidSet == null) {
-                gtid = logEvent.getSid().toString() + ":1-" + logEvent.getGno();
-                gtidSet = MysqlGTIDSet.parse(gtid);
-            }
-            gtidSet.update(gtid);
-        }
-    }
-
     public GTIDSet getGtidSet() {
         return gtidSet;
+    }
+
+    public void setGtidSet(GTIDSet gtidSet) {
+        this.gtidSet = gtidSet;
+    }
+
+    public GtidLogEvent getGtidLogEvent() {
+        return gtidLogEvent;
+    }
+
+    public void setGtidLogEvent(GtidLogEvent gtidLogEvent) {
+        this.gtidLogEvent = gtidLogEvent;
     }
 }
